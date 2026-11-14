@@ -1,37 +1,28 @@
-# Joo Ann & Alvin — Wedding site
+# Joo Ann & Alvin — Wedding site (Next.js + Supabase + Vercel)
 
-Static site (no build step) + Vercel functions in `/api` + Supabase database.
+Everything guests see (names, date, venue, story, schedule, FAQ, gifts, photos, colours, section
+backgrounds, music) is stored in the database and edited at **/atelier** — no code changes needed.
+The first time the tables are empty, the site seeds itself from `src/lib/defaults.ts`.
 
-## File guide (where to change what)
-| File | What it is |
-|---|---|
-| `config.js` | **Start here.** All text, dates, photos, intro, music. Has a quick map at the top. |
-| `styles.css` | Colours + fonts (tokens at the top) and base layout |
-| `premium.css` / `premium.js` | Animations and interactions (every function is commented) |
-| `extras.css` / `extras.js` | Opening curtain, music button, Well Wishes wall |
-| `app.js` | Builds sections from `config.js` |
-| `admin.html` | Private guest list (password protected) |
-| `api/rsvp.js` · `api/wishes.js` · `api/admin.js` | Server code (saves RSVPs, emails you, serves wishes, admin) |
-| `supabase/schema.sql` | Database table |
+## Deploy
+1. **Supabase**: create a project → Project Settings → Database → Connection string → **Session pooler** URI.
+2. **Create the tables** (once, from your laptop, in this folder):
+   `npm install` then `DATABASE_URL="<pooler uri>" npx drizzle-kit push`
+3. **Vercel**: push to GitHub → New Project → import. Add environment variables:
 
-## Setup
-1. **Supabase**: new project -> SQL Editor -> paste `supabase/schema.sql` -> Run.
-2. Settings -> API: copy **Project URL** and the **service_role** key.
-3. **Vercel**: push to GitHub -> New Project -> import (Framework: Other). Add Environment Variables:
-
-| Name | Required | Value |
+| Name | Required | Notes |
 |---|---|---|
-| `SUPABASE_URL` | yes | Project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | yes | service_role key (secret!) |
-| `ADMIN_PASSWORD` | yes | a long password for `/admin.html` |
-| `RESEND_API_KEY` | optional | from resend.com — enables email alerts |
-| `NOTIFY_EMAIL` | optional | inbox that receives alerts |
-| `NOTIFY_FROM` | optional | e.g. `Wedding <rsvp@yourdomain.com>` (needs a verified domain) |
+| `DATABASE_URL` | yes | Supabase Session pooler URI |
+| `ADMIN_PASSWORD` | yes | password for `/atelier` |
+| `ADMIN_SECRET` | yes | long random string (signs the login cookie) |
+| `RESEND_API_KEY`, `NOTIFY_EMAIL` | optional | email alert on every RSVP |
+| `NOTIFY_FROM` | optional | needs a domain verified in Resend |
+| `NEXT_PUBLIC_SITE_URL` | optional | your final URL, for link previews |
 
-4. Redeploy after adding variables. Test: submit an RSVP, open `/admin.html`.
+4. Open `/atelier`, sign in, and replace the placeholder gallery photos with your own
+   (upload to Supabase Storage → Public bucket → paste the image URLs).
 
-## Music
-Add your song to a new `assets/` folder (e.g. `assets/our-song.mp3`) and set `music.src` in `config.js`.
-
-## Approving well wishes
-Guests' RSVP messages are private by default. In `/admin.html` tick **On wall** next to a message and it appears on the site within about a minute (first name only).
+## Edit first
+- `src/lib/defaults.ts` — starting content (used only on first run). After that use **/atelier**.
+- Bride/groom surnames, parents, roles, portraits and meal options are blank/generic: fill them in Atelier.
+- Music: paste an audio URL (Supabase Storage) into the Music field in Atelier.
